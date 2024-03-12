@@ -23,6 +23,11 @@ class CampaignController extends Controller
         return CampaignResource::collection($data);
     }
 
+    public function indexActive(Request $request){
+        $data = Campaign::where('status', 'Active')->get();
+        return CampaignResource::collection($data);
+    }
+
 
     public function store(Request $request){
         $data = new Campaign();

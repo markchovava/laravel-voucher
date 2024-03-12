@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\ClaimedVoucherResource;
 use App\Models\ClaimedVoucher;
-use App\Models\Program;
 use App\Models\RedeemVoucher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -15,8 +14,8 @@ class ClaimedVoucherController extends Controller
     public function index(Request $request){
         if(!empty($request->search)){
             $data = ClaimedVoucher::with(['user', 'program', 'campaign'])
-                            ->where('code', 'LIKE', '%' . $request->search . '%')
-                            ->paginate(10);
+                        ->where('code', 'LIKE', '%' . $request->search . '%')
+                        ->paginate(10);
         }else{
             $data = ClaimedVoucher::with(['user', 'program', 'campaign'])->paginate(10);
         }

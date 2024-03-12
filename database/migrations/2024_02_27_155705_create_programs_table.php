@@ -19,6 +19,7 @@ return new class extends Migration
             $table->bigInteger('total_quantity')->nullable();
             $table->string('start_date')->nullable();
             $table->string('end_date')->nullable();
+            $table->string('receipt_no')->nullable();
             $table->string('reward_points')->nullable();
             $table->string('reward_name')->nullable();
             $table->timestamps();

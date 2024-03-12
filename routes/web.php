@@ -50,9 +50,11 @@ Route::prefix('claim')->group(function() {
 
 
 Route::prefix('program')->group(function() {
+    Route::get('/program-campaign', [ProgramController::class, 'searchByProgramCampaign']);
     Route::get('/', [ProgramController::class, 'index']);
     Route::post('/', [ProgramController::class, 'store']);
     Route::get('/{id}', [ProgramController::class, 'view']);
+    
 });
 
 

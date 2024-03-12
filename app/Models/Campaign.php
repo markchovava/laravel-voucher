@@ -10,9 +10,9 @@ class Campaign extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'name',
         'description',
-        'user_id',
         'status',
         'vouchers_quantity',
         'reward_name',

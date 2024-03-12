@@ -12,6 +12,7 @@ class Program extends Model
     protected $fillable = [
         'user_id',
         'campaign_id',
+        'receipt_no',
         'total_points',
         'total_quantity',
         'start_date',

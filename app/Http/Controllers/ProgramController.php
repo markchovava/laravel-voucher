@@ -2,18 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\CampaignResource;
 use App\Http\Resources\ProgramResource;
+use App\Http\Resources\ProgramVoucherResource;
+use App\Http\Resources\UserResource;
 use App\Models\Campaign;
 use App\Models\GeneratedVoucher;
 use App\Models\Program;
 use App\Models\ProgramVoucher;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
-
+use Illuminate\Support\Facades\Log;
 
 class ProgramController extends Controller
 {
+    public function generateRandomText($length = 7) {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $shuffled = str_shuffle($characters);
+        return substr($shuffled, 0, $length);
+    }
     
     public function index(Request $request){
         if(!empty($request->search)){
@@ -29,12 +37,11 @@ class ProgramController extends Controller
         }
         return ProgramResource::collection($data);
     }
-
     public function indexByUserId(Request $request){
         $user_id = Auth::user()->id;
         if(!empty($request->search)){
             $campaign = Campaign::where('name', 'LIKE', '%' . $request->search . '%')
-                                ->first();
+                            ->first();
             $data = Program::with(['user', 'campaign'])
                             ->where('user_id', $user_id)
                             ->where('campaign_id', $campaign->id)
@@ -48,7 +55,6 @@ class ProgramController extends Controller
         }
         return ProgramResource::collection($data);
     }
-
     public function store(Request $request){
         $user_id = Auth::user()->id;
         $data = Program::where('campaign_id', $request->campaign_id)
@@ -94,6 +100,8 @@ class ProgramController extends Controller
             $voucher->code = $request->code;
             $voucher->points = $request->points;
             $voucher->generated_voucher_id = $request->generated_voucher_id;
+            $voucher->created_at = now();
+            $voucher->updated_at = now();
             $voucher->save();
             /* DELETE FROM GENERATED VOUCHER */
             GeneratedVoucher::where('id', $request->generated_voucher_id)->delete();
@@ -104,13 +112,160 @@ class ProgramController extends Controller
 
         }
     }
-
     public function view($id){
         $data = Program::with(['user', 'campaign'])->find($id);
         return response()->json([
          'data' => $data
         ]);
     }
+
+
+    public function storeByAmount(Request $request){
+        if(empty($request->campaign_id)){
+            return response()->json([
+                'message' => 'Campaign is required.',
+            ]);
+        }
+        if(empty($request->email)){
+            return response()->json([
+                'message' => 'Email is required.',
+            ]);
+        }
+        if(empty($request->amount)){
+            return response()->json([
+                'message' => 'Amount is required.',
+            ]);
+        }
+        if(empty($request->receipt_no)){
+            return response()->json([
+                'message' => 'Receipt Number is required.',
+            ]);
+        }
+        /* CAMPAIGN */
+        $campaign = Campaign::where('id', $request->campaign_id)->first();
+        if(empty($campaign)){
+            return response()->json([
+                'message' => 'Campaign does not exist.',
+            ]);
+        }
+        $user = User::where('email', $request->email)->first();
+        if(empty($user)){
+            return response()->json([
+                'message' => 'User does not exist.',
+            ]);
+        }
+        $program = Program::with(['user', 'campaign'])
+                    ->where('campaign_id', $campaign->id)
+                    ->where('user_id', $user->id)
+                    ->first();
+            
+        if(empty($program)){
+            $pre = substr($campaign->name, 0, 3);
+            $code = $pre . $this->generateRandomText();
+            $calculate_points = (int)$request->amount / $campaign->price_of_voucher;
+            $total_points = round($calculate_points);
+            /*  */
+            $program = new Program();
+            $program->user_id = $user->id;
+            $program->total_points = $campaign->total_points;
+            $program->campaign_id = $request->campaign_id;
+            $program->receipt_no = $request->receipt_no;
+            $program->start_date = $campaign->start_date;
+            $program->end_date = $campaign->end_date;
+            $program->reward_name = $campaign->reward_name;
+            $program->reward_points = $campaign->reward_points;
+            $program->total_quantity = 1;
+            $program->total_points = $total_points;
+            $program->created_at = now();
+            $program->updated_at = now();
+            $program->save();
+            /*  */
+            $voucher = new ProgramVoucher();
+            $voucher->user_id = $user->id;
+            $voucher->program_id = $program->id;
+            $voucher->campaign_id = $request->campaign_id;
+            $voucher->generated_voucher_id = null;
+            $voucher->code = $code;
+            $voucher->points = $total_points;
+            $voucher->save();
+            
+            return response()->json([
+                'message' => 'A new program added.',
+                'campaign' => new CampaignResource($campaign),
+                'program' => new ProgramResource($program),
+                'voucher' => new ProgramVoucherResource($voucher),
+                'user' => new UserResource($user)
+            ]);
+        }
+        /* GENERATE VOUCHER */
+        $pre = substr($campaign->name, 0, 3);
+        $code = $pre . $this->generateRandomText();
+        /* CALCULATE POINTS */
+        $calculate_points = (int)$request->amount / $campaign->price_of_voucher;
+        $total_points = round($calculate_points) * $campaign->points_per_voucher;
+        /* Program */
+        $program->user_id = $user->id;
+        $program->campaign_id = $request->campaign_id;
+        $program->receipt_no = $request->receipt_no;
+        $program->total_quantity = 1;
+        $program->total_points += $total_points;
+        $program->created_at = now();
+        $program->updated_at = now();
+        $program->save();
+        /* ProgramVoucher */
+        $voucher = new ProgramVoucher();
+        $voucher->user_id = $user->id;
+        $voucher->program_id = $program->id;
+        $voucher->campaign_id = $request->campaign_id;
+        $voucher->generated_voucher_id = null;
+        $voucher->code = $code;
+        $voucher->points = $total_points;
+        $voucher->save();          
+        return response()->json([
+            'message' => 'A Program has been updated.',
+            'campaign' => new CampaignResource($campaign),
+            'program' => new ProgramResource($program),
+            'voucher' => new ProgramVoucherResource($voucher),
+            'user' => new UserResource($user)
+        ]);
+    }
+
+
+    public function searchByProgramCampaign(Request $request){
+        if(!empty($request->search)){
+            $campaign = Campaign::where('name', 'LIKE', '%' . $request->search . '%')->first();
+            if(empty($campaign)){
+                return response()->json([
+                    'message' => 'Campaign does not exist.',
+                ]);
+            }
+            $user = User::where('email', $request->email)->first();
+            if(empty($user)){
+                return response()->json([
+                    'message' => 'User does not exist.',
+                ]);
+            }
+            $data = Program::with(['user', 'campaign'])
+                        ->where('campaign_id', $campaign->id)
+                        ->where('user_id', $user->id)
+                        ->first();
+            if(empty($data)){
+                return response()->json([
+                    'message' => 'Program does not e does not exist.',
+                ]);
+            }
+            return  response()->json([
+                'data' => new ProgramResource($data),
+            ]);
+        }
+        else{
+            return response()->json([
+                'message' => 'Campaign name is required.',
+            ]);
+        }
+    }
+
+    
 
 
 }

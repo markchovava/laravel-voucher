@@ -48,6 +48,16 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/', [AppInfoController::class, 'store']);
     });
 
+    Route::prefix('campaign')->group(function() {
+        Route::get('/', [CampaignController::class, 'index']);
+        Route::get('/active', [CampaignController::class, 'indexActive']);
+        Route::post('/', [CampaignController::class, 'store']);
+        Route::get('/{id}', [CampaignController::class, 'view']);
+        Route::post('/{id}', [CampaignController::class, 'update']);
+        Route::post('/status/{id}', [CampaignController::class, 'update_status']);
+        Route::delete('/{id}', [CampaignController::class, 'delete']);
+    });
+
     Route::prefix('generated-voucher')->group(function() {
         Route::get('/', [GeneratedVoucherController::class, 'index']);
         Route::get('/by-id/{id}', [GeneratedVoucherController::class, 'indexById']);
@@ -56,21 +66,13 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::get('/voucher-search', [GeneratedVoucherController::class, 'voucherSearch']);
     });
     
-    Route::prefix('campaign')->group(function() {
-        Route::get('/', [CampaignController::class, 'index']);
-        Route::post('/', [CampaignController::class, 'store']);
-        Route::get('/{id}', [CampaignController::class, 'view']);
-        Route::post('/{id}', [CampaignController::class, 'update']);
-        Route::post('/status/{id}', [CampaignController::class, 'update_status']);
-        Route::delete('/{id}', [CampaignController::class, 'delete']);
-    });
-
-
     Route::prefix('program')->group(function() {
         Route::get('/', [ProgramController::class, 'index']);
         Route::get('/by-user-id', [ProgramController::class, 'indexByUserId']);
         Route::post('/', [ProgramController::class, 'store']);
         Route::get('/{id}', [ProgramController::class, 'view']);
+        Route::post('/store-by-amount', [ProgramController::class, 'storeByAmount']);
+        Route::get('/program-campaign', [ProgramController::class, 'searchByProgramCampaign']);
     });
 
     Route::prefix('program-voucher')->group(function() {
