@@ -16,6 +16,7 @@ class ProgramVoucher extends Model
         'generated_voucher_id',
         'points',
         'code',
+        'receipt_no',
         'created_at',
         'updated_at',
     ];

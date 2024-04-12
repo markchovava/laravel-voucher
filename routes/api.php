@@ -34,20 +34,21 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::group(['middleware' => ['auth:sanctum']], function() {
 
+    
     Route::get('/logout', [AuthController::class, 'logout']);
-
+    /* PROFILE */
     Route::prefix('profile')->group(function() {
         Route::get('/', [AuthController::class, 'view']);
         Route::get('/{id}', [AuthController::class, 'checkUserById']);
         Route::post('/', [AuthController::class, 'update']);
         Route::post('/password', [AuthController::class, 'password']);
     });
-
+    /* APP-INFO */
     Route::prefix('app-info')->group(function() {
         Route::get('/', [AppInfoController::class, 'view']);
         Route::post('/', [AppInfoController::class, 'store']);
     });
-
+    /* CAMPAIGN */
     Route::prefix('campaign')->group(function() {
         Route::get('/', [CampaignController::class, 'index']);
         Route::get('/active', [CampaignController::class, 'indexActive']);
@@ -57,7 +58,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/status/{id}', [CampaignController::class, 'update_status']);
         Route::delete('/{id}', [CampaignController::class, 'delete']);
     });
-
+    /* GENERATED-VOUCHER */
     Route::prefix('generated-voucher')->group(function() {
         Route::get('/', [GeneratedVoucherController::class, 'index']);
         Route::get('/by-id/{id}', [GeneratedVoucherController::class, 'indexById']);
@@ -65,7 +66,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::get('/exist/{id}', [GeneratedVoucherController::class, 'checkIfExists']);
         Route::get('/voucher-search', [GeneratedVoucherController::class, 'voucherSearch']);
     });
-    
+    /* PROGRAM */
     Route::prefix('program')->group(function() {
         Route::get('/', [ProgramController::class, 'index']);
         Route::get('/by-user-id', [ProgramController::class, 'indexByUserId']);
@@ -74,12 +75,12 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/store-by-amount', [ProgramController::class, 'storeByAmount']);
         Route::get('/program-campaign', [ProgramController::class, 'searchByProgramCampaign']);
     });
-
+    /* PROGRAM-VOUCHER */
     Route::prefix('program-voucher')->group(function() {
         Route::get('/by-program/{id}', [ProgramVoucherController::class, 'indexByProgramId']);
         Route::get('/by-program-user/{id}', [ProgramVoucherController::class, 'indexByProgramUserId']);
     });
-
+    /* REDEEM-VOUCHER */
     Route::prefix('redeem-voucher')->group(function() {
         Route::get('/', [RedeemVoucherController::class, 'index']);
         Route::get('/search', [RedeemVoucherController::class, 'searchView']);
@@ -88,14 +89,13 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/', [RedeemVoucherController::class, 'store']);
         Route::get('/{id}', [RedeemVoucherController::class, 'view']);
     });
-
+    /* CLAIMED-VOUCHER */
     Route::prefix('claimed-voucher')->group(function() {
         Route::get('/', [ClaimedVoucherController::class, 'index']);
         Route::post('/', [ClaimedVoucherController::class, 'store']);
         Route::get('/{id}', [ClaimedVoucherController::class, 'view']);
     });
-
-    
+    /* ROLE */
     Route::prefix('role')->group(function() {
         Route::get('/', [RoleController::class, 'index']);
         Route::get('/all', [RoleController::class, 'indexAll']);
@@ -104,7 +104,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/{id}', [RoleController::class, 'update']);
         Route::delete('/{id}', [RoleController::class, 'delete']);
     });
-    
+    /* USER */
     Route::prefix('user')->group(function() {
         Route::get('/', [UserController::class, 'index']);
         Route::post('/', [UserController::class, 'store']);
@@ -112,10 +112,11 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
         Route::post('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'delete']);
     });
-
+    /* VOUCHER-PRICE */
     Route::prefix('voucher-price')->group(function() {
         Route::get('/', [VoucherPriceController::class, 'view']);
         Route::post('/', [VoucherPriceController::class, 'store']);
     });
+
 
 });

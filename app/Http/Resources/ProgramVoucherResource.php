@@ -22,6 +22,7 @@ class ProgramVoucherResource extends JsonResource
             'generated_voucher_id' => $this->generated_voucher_id,
             'points' => $this->points,
             'code' => $this->code,
+            'receipt_no' => $this->receipt_no,
             'created_at' => $this->created_at->format('d/m/Y'),
             'updated_at' => $this->updated_at->format('d/m/Y'),
             'user' => new UserResource($this->whenLoaded('user')),

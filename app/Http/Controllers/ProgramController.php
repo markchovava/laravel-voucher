@@ -10,6 +10,7 @@ use App\Models\Campaign;
 use App\Models\GeneratedVoucher;
 use App\Models\Program;
 use App\Models\ProgramVoucher;
+use App\Models\RedeemVoucher;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -114,6 +115,18 @@ class ProgramController extends Controller
     }
     public function view($id){
         $data = Program::with(['user', 'campaign'])->find($id);
+        if($data->total_points >= $data->reward_points){
+            $data->total_points -= $data->reward_points;
+            $data->save();
+            $redeem_voucher = new RedeemVoucher();
+            $redeem_voucher->code = date('Ymd') . $this->generateRandomText();
+            $redeem_voucher->user_id = $data->user_id;
+            $redeem_voucher->program_id = $data->id;
+            $redeem_voucher->campaign_id = $data->user_id;
+            $redeem_voucher->reward_points = $data->reward_points;
+            $redeem_voucher->status = 'Generated';
+            $redeem_voucher->save();
+        }
         return response()->json([
          'data' => $data
         ]);
@@ -169,7 +182,6 @@ class ProgramController extends Controller
             $program->user_id = $user->id;
             $program->total_points = $campaign->total_points;
             $program->campaign_id = $request->campaign_id;
-            $program->receipt_no = $request->receipt_no;
             $program->start_date = $campaign->start_date;
             $program->end_date = $campaign->end_date;
             $program->reward_name = $campaign->reward_name;
@@ -185,6 +197,7 @@ class ProgramController extends Controller
             $voucher->program_id = $program->id;
             $voucher->campaign_id = $request->campaign_id;
             $voucher->generated_voucher_id = null;
+            $voucher->receipt_no = $request->receipt_no;
             $voucher->code = $code;
             $voucher->points = $total_points;
             $voucher->save();
@@ -206,8 +219,7 @@ class ProgramController extends Controller
         /* Program */
         $program->user_id = $user->id;
         $program->campaign_id = $request->campaign_id;
-        $program->receipt_no = $request->receipt_no;
-        $program->total_quantity = 1;
+        $program->total_quantity += 1;
         $program->total_points += $total_points;
         $program->created_at = now();
         $program->updated_at = now();
@@ -218,6 +230,7 @@ class ProgramController extends Controller
         $voucher->program_id = $program->id;
         $voucher->campaign_id = $request->campaign_id;
         $voucher->generated_voucher_id = null;
+        $voucher->receipt_no = $request->receipt_no;
         $voucher->code = $code;
         $voucher->points = $total_points;
         $voucher->save();          
@@ -251,7 +264,7 @@ class ProgramController extends Controller
                         ->first();
             if(empty($data)){
                 return response()->json([
-                    'message' => 'Program does not e does not exist.',
+                    'message' => 'Program does not exist.',
                 ]);
             }
             return  response()->json([

@@ -64,12 +64,14 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Email is not found.',
                 'error' => 401,
+                'status' => 0,
             ]);
         }
         if(!Hash::check($request->password, $user->password)){
             return response()->json([
                 'message' => 'Password does not match.',
                 'error' => 401,
+                'status' => 0,
             ]);
         }
         return response()->json([
@@ -77,6 +79,7 @@ class AuthController extends Controller
             'auth_token' => $user->createToken($user->email)->plainTextToken,
             'role_level' => !empty($user->role_level) ? $user->role_level : 4,
             'user_id' => $user->id,
+            'status' => 1,
         ]);
 
     }

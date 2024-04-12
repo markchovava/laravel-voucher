@@ -14,7 +14,7 @@ class ClaimedVoucherController extends Controller
     public function index(Request $request){
         if(!empty($request->search)){
             $data = ClaimedVoucher::with(['user', 'program', 'campaign'])
-                        ->where('code', 'LIKE', '%' . $request->search . '%')
+                        ->where('code',  $request->search )
                         ->paginate(10);
         }else{
             $data = ClaimedVoucher::with(['user', 'program', 'campaign'])->paginate(10);

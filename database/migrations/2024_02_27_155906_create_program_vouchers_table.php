@@ -17,6 +17,7 @@ return new class extends Migration
             $table->bigInteger('program_id')->nullable();
             $table->bigInteger('campaign_id')->nullable();
             $table->string('code')->nullable();
+            $table->string('receipt_no')->nullable();
             $table->bigInteger('generated_voucher_id')->nullable();
             $table->bigInteger('points')->nullable();
             $table->timestamps();

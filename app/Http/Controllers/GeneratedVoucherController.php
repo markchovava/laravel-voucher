@@ -60,19 +60,16 @@ class GeneratedVoucherController extends Controller
 
     public function voucherSearch(Request $request){
         if(!empty($request->search)){
-            $voucher = GeneratedVoucher::where('code', 'LIKE', '%' . $request->search . '%')->first();
-            Log::info('$voucher');
+            $voucher = GeneratedVoucher::where('code', $request->search)->first();
             if(!empty($voucher)){
              $campaign = Campaign::where('id', $voucher->campaign_id)->first();
-             Log::info('$campaign');
-             Log::info($campaign);
              return response()->json([
                  'voucher' => $voucher,
                  'campaign' => $campaign
              ]);
             } else{
                  return response()->json([
-                     'message' => 'Voucher used already.',
+                     'message' => 'Oops, Invalid Voucher...',
                  ]);
             }
         } else{
