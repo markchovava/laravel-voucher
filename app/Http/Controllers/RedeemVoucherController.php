@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\RedeemVoucherResource;
+use App\Models\ClaimedVoucher;
 use App\Models\Program;
 use App\Models\RedeemVoucher;
 use Illuminate\Http\Request;
@@ -27,6 +28,38 @@ class RedeemVoucherController extends Controller
             $data = RedeemVoucher::with(['user', 'program', 'campaign'])->paginate(10);
         }
         return RedeemVoucherResource::collection($data);
+    }
+
+    public function voucherSearch(Request $request){
+        if(!empty($request->search)){
+            $data = RedeemVoucher::with(['user', 'program', 'campaign'])
+                    ->where('code', $request->search)->first();
+            if(isset($data)){
+                return response()->json([
+                    'data' => new RedeemVoucherResource($data),
+                    'status' => 1,
+                ]);
+            } else{
+                $used = ClaimedVoucher::with(['user', 'program', 'campaign'])
+                        ->where('code', $request->search)->first();
+                if(isset($used)){
+                    return response()->json([
+                        'message' => 'The voucher reward has already been issued.',
+                        'status' => 0,
+                    ]);
+                } else{
+                    return response()->json([
+                        'message' => 'The voucher is not found.',
+                        'status' => 0,
+                    ]);
+                }
+            }
+        } else{
+            return response()->json([
+                'message' => 'Please enter your voucher in the input field.',
+                'status' => 0,
+            ]);
+        }
     }
 
     public function searchView(Request $request){

@@ -83,6 +83,7 @@ Route::group(['middleware' => ['auth:sanctum']], function() {
     /* REDEEM-VOUCHER */
     Route::prefix('redeem-voucher')->group(function() {
         Route::get('/', [RedeemVoucherController::class, 'index']);
+        Route::get('/voucher-search', [RedeemVoucherController::class, 'voucherSearch']);
         Route::get('/search', [RedeemVoucherController::class, 'searchView']);
         Route::get('/by-program-id', [RedeemVoucherController::class, 'indexByProgramId']);
         Route::get('/check-by-id', [RedeemVoucherController::class, 'checkIfExists']);

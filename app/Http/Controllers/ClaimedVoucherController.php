@@ -29,7 +29,7 @@ class ClaimedVoucherController extends Controller
         $data->campaign_id = $request->campaign_id;
         $data->program_id = $request->program_id;
         $data->reward_points = $request->reward_points;
-        $data->status = 'Used';
+        $data->status = 'Issued';
         $data->save();
 
         $redeemData = RedeemVoucher::find($request->redeem_voucher_id);
