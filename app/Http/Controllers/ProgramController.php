@@ -136,21 +136,25 @@ class ProgramController extends Controller
     public function storeByAmount(Request $request){
         if(empty($request->campaign_id)){
             return response()->json([
+                'status' => 0,
                 'message' => 'Campaign is required.',
             ]);
         }
-        if(empty($request->email)){
+        if(empty($request->phone)){
             return response()->json([
+                'status' => 0,
                 'message' => 'Email is required.',
             ]);
         }
         if(empty($request->amount)){
             return response()->json([
+                'status' => 0,
                 'message' => 'Amount is required.',
             ]);
         }
         if(empty($request->receipt_no)){
             return response()->json([
+                'status' => 0,
                 'message' => 'Receipt Number is required.',
             ]);
         }
@@ -158,13 +162,15 @@ class ProgramController extends Controller
         $campaign = Campaign::where('id', $request->campaign_id)->first();
         if(empty($campaign)){
             return response()->json([
+                'status' => 0,
                 'message' => 'Campaign does not exist.',
             ]);
         }
-        $user = User::where('email', $request->email)->first();
+        $user = User::where('phone', $request->phone)->first();
         if(empty($user)){
             return response()->json([
-                'message' => 'User does not exist.',
+                'status' => 0,
+                'message' => 'User does not exist, you are required to register to use the phone number.',
             ]);
         }
         $program = Program::with(['user', 'campaign'])
@@ -203,6 +209,7 @@ class ProgramController extends Controller
             $voucher->save();
             
             return response()->json([
+                'status' => 1,
                 'message' => 'A new program added.',
                 'campaign' => new CampaignResource($campaign),
                 'program' => new ProgramResource($program),
@@ -235,6 +242,7 @@ class ProgramController extends Controller
         $voucher->points = $total_points;
         $voucher->save();          
         return response()->json([
+            'status' => 1,
             'message' => 'A Program has been updated.',
             'campaign' => new CampaignResource($campaign),
             'program' => new ProgramResource($program),

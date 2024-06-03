@@ -71,7 +71,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Password does not match.',
                 'error' => 401,
-                'status' => 0,
+                'status' => 2,
             ]);
         }
         return response()->json([
@@ -87,17 +87,26 @@ class AuthController extends Controller
     public function register(Request $request){
         if(User::where('email', $request->email)->first()){
             return response()->json([
-                'error' => 'Email is already used, try a different one.',
+                'status' => 0,
+                'message' => 'Email is already used, please try a different one.',
+            ]);
+        }
+        if(User::where('phone', $request->phone)->first()){
+            return response()->json([
+                'status' => 2,
+                'message' => 'Phone Number is already used, please try a different one.',
             ]);
         }
         $data = new User();
         $data->role_level = isset($request->role_level) ? $request->role_level : 4;
         $data->email = $request->email;
+        $data->phone = $request->phone;
         $data->code = $request->password;
         $data->password = Hash::make($request->password);
         $data->save();
 
         return response()->json([
+            'status' => 1,
             'message' => 'Created Successfully.',
         ]);
     }
